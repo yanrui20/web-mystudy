@@ -1,6 +1,6 @@
 # web-mystudy
 
-| TYPE | Difficulty |                    URL-link                    |                   FILE                   |
+| Type | Difficulty |                    URL-Link                    |                   File                   |
 | :--: | :--------: | :--------------------------------------------: | :--------------------------------------: |
 | XSS  |    EASY    | https://xss.angelo.org.cn/level1.php?name=test |      [XSS-easy.md](XSS\XSS-easy.md)      |
 | XSS  |   MEDIUM   |               http://prompt.ml/0               |    [XSS-medium.md](XSS\XSS-medium.md)    |
