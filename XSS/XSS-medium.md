@@ -427,7 +427,7 @@ true
 `{"source":"0","__proto__":{"source":"onerror=prompt(1)"}}`
 但是并不能绕过题目的过滤，于是便要利用replace的一个特性
 
-![img](https://xzfile.aliyuncs.com/media/upload/picture/20190326141703-c618e428-4f8e-1.jpg)
+![image-20201121001528627](_XSS-medium_image/image-20201121001528627.png)
 
 ```bash
 >'11223344'.replace('2',"test")
