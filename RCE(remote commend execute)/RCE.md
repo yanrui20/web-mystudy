@@ -186,6 +186,6 @@ payload:
 
 #### URL表
 
-![url1](F:\$_File\web安全\知识点\RCE(remote commend execute)\url1.png)
+![url1](_RCE_image/url1.png)
 
-![url2](F:\$_File\web安全\知识点\RCE(remote commend execute)\url2.png)
+![url2](_RCE_image/url2.png)

