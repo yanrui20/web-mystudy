@@ -1,3 +1,5 @@
+**目录：**
+
 [TOC]
 
 #### 1. Reflected XSS into HTML context with nothing encoded
@@ -74,3 +76,67 @@ location = 'https://acbb1f641eaf54af80700c4800db0027.web-security-academy.net/?s
 ```
 
 #### 4. Reflected XSS with event handlers and `href` attributes blocked
+
+可用的tag有：a, animate, discard, image, svg, title
+
+可用的event有：...一个都没有
+
+href属性也不能用。应该是不能使用`href=`
+
+但是在svg标签存在的情况下，animate可以给上一个标签赋值。
+
+如
+
+```html
+<svg><a><animate attributeName=href values="javascript:alert(1)"/>Click me</a></svg>
+```
+
+> <animate attributeName=href values="javascript:alert(1)"/> 等同于
+>
+> <animate attributeName=href values="javascript:alert(1)"></animate>
+>
+> 即马上在后面添加标签结束符
+
+这样就可以成功把`<a>`变成`<a href="javascript:alert(1)">`
+
+但是这样不会显示`Click me`那个文本，因为在`<svg>`标签下，需要一个框的大小才能正常显示文字
+
+添加大小的方式：`<text x=20 y=20>`或者`<rect width=100% height=100%>`(要求text标签包含文字)
+
+所以最终payload：
+
+```html
+<svg><a><animate attributeName=href values="javascript:alert(1)"/><text x=20 y=20>Click me</text></a></svg>
+<svg><a><animate attributeName=href values="javascript:alert(1)"/><rect width=100% height=100%>Click me</rect></a></svg>
+```
+
+#### 5.Reflected XSS with some SVG markup allowed
+
+然后爆破出来可以用discard,image, svg, title四个标签以及onbegin事件
+
+直接去[XSS-payload](../字典/XSS-payload.txt)搜索discard和onbegin
+
+最终找到了`<svg><discard onbegin=alert(1)>`
+
+#### 6.Reflected XSS into attribute with angle brackets HTML-encoded
+
+题目的意思是，过滤了`<` 和`>`，并将它们替换成命名实体
+
+显示考虑到用`<svg>`标签进行反实例化，但是`<svg>`本身就包含尖括号，已经不起作用
+
+我一开始以为这个只会在顶上显示，然后后面翻了一下，发现有一个value，这就简单了，直接封闭然后onclick
+
+```
+"onclick="alert(1)
+```
+
+确实弹窗了，但是不给过，看了一下答案，用的是onmouseover，就很疑惑
+
+payload
+
+```
+"onmouseover="alert(1)
+```
+
+#### 7.Stored XSS into anchor `href` attribute with double quotes HTML-encoded
+
