@@ -31,3 +31,4 @@ concat((select table_name from information_schema.tables where table_schema='sql
 [limit用法](https://blog.csdn.net/sinat_36246371/article/details/54582904)
 
 limit a,b  :  从第a个开始，显示b个（a从0开始数）
+

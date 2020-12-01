@@ -80,5 +80,5 @@ ascii(substr((select flag from security.flag limit 0,1),1,1))>97
 
 ## 11. 编写脚本
 
-[bool_injection.py](./bool_injection.py)
+[bool_injection.py](../python-scripts/bool_injection.py)
 
