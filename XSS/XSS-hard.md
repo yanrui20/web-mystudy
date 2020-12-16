@@ -140,3 +140,11 @@ payload
 
 #### 7.Stored XSS into anchor `href` attribute with double quotes HTML-encoded
 
+这个题漏洞出在提交评论的地方。提交了几次之后发现位置。
+
+![7](_XSS-hard_image/7.png)
+
+发现没有过滤。。。就直接输入就可以了。
+
+#### 8.Reflected XSS in canonical link tag
+
