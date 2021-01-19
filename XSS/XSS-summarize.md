@@ -106,7 +106,7 @@
 
 * replace()特性
 
-    <img src="_XSS-summarize_image/image-20201121001528627.png" alt="image-20201121001528627" style="zoom:50%;" />
+    <img src="XSS-summarize.assets/image-20201121001528627.png" alt="image-20201121001528627" style="zoom:50%;" />
 
     ```
     >'11223344'.replace('2',"test")
@@ -144,7 +144,7 @@
 
     使用方法：先用url编码写进burp，然后在burp里面进行url解码
 
-    <img src="_XSS-summarize_image/burp%E8%BD%AC%E7%A0%81.png" alt="burp" style="zoom:50%;" />
+    <img src="XSS-summarize.assets/burp%E8%BD%AC%E7%A0%81.png" alt="burp" style="zoom:50%;" />
 
 * 过滤`on`开头`=`结尾，如`onclick=`
 

@@ -142,7 +142,7 @@ payload
 
 这个题漏洞出在提交评论的地方。提交了几次之后发现位置。
 
-![7](_XSS-hard_image/7.png)
+![7](XSS-hard.assets/7.png)
 
 发现没有过滤。。。就直接输入就可以了。
 
@@ -150,7 +150,7 @@ payload
 
 按键触发。canonical link tag。
 
-![8](_XSS-hard_image/8.png)
+![8](XSS-hard.assets/8.png)
 
 发现位置。
 
@@ -165,7 +165,7 @@ url/?%27accesskey=%27x%27onclick=%27alert(1)%27
 
 #### 9.Reflected XSS into a JavaScript string with single quote and backslash escaped
 
-![9](_XSS-hard_image/9.png)
+![9](XSS-hard.assets/9.png)
 
 找到位置。
 

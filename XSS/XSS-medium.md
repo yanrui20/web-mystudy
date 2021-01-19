@@ -237,7 +237,7 @@ function escape(input) {
 
 * 之后使用burp进行转码
 
-    ![burp](_XSS-medium_image/burp%E8%BD%AC%E7%A0%81.png)
+    ![burp](XSS-medium.assets/burp%E8%BD%AC%E7%A0%81.png)
 
 * 最后提交
 
@@ -352,7 +352,7 @@ function escape(input) {
 
 * 但是`"`被encode了，`'`又被替换了，所以不能用字符串形式的加解码。或者将字符串变换成数字。
 
-* parseInt(string, radix)  ![parseInt](_XSS-medium_image/parseInt.png)
+* parseInt(string, radix)  ![parseInt](XSS-medium.assets/parseInt.png)
 
 * NumberObject.toString(radix)
 
@@ -427,7 +427,7 @@ true
 `{"source":"0","__proto__":{"source":"onerror=prompt(1)"}}`
 但是并不能绕过题目的过滤，于是便要利用replace的一个特性
 
-![image-20201121001528627](_XSS-medium_image/image-20201121001528627.png)
+![image-20201121001528627](XSS-medium.assets/image-20201121001528627.png)
 
 ```bash
 >'11223344'.replace('2',"test")
