@@ -193,6 +193,8 @@ payload：
 
 即payload为：`';alert(1);'`。
 
+这个题目，官方给的payload是：`'-alert(1)-'`。
+
 #### 11. Reflected XSS into a JavaScript string with angle brackets and double quotes HTML-encoded and single quotes escaped
 
 尖括号和双引号被编码，单引号被过滤。
@@ -256,3 +258,117 @@ payload：`\';alert(1);//`
   * 最后一点`{a:'`只是为了封闭后面的部分。
 
 #### 13. Stored XSS into `onclick` event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped
+
+![13.1](XSS-hard.assets/13.1.png)
+
+提交评论，然后点击作者名称将会调用alert。
+
+![13.2](XSS-hard.assets/13.2.png)
+
+这个题目大概就是你在提交的时候，你填写的website部分会变成你名字的链接，并且还在onclick里面有展示。
+
+这个题目的要求大概是在onclick里面搞事，毕竟题目名字里面就有onclick。
+
+直接尝试闭合，发现单引号被转义了，尝试自己加反斜杠。
+
+![13.3](XSS-hard.assets/13.3.png)
+
+然后发现，反斜杠也被处理掉了。
+
+![13.4](XSS-hard.assets/13.4.png)
+
+尝试一下单引号的实体编码。好像实体编码可以在js里面被解析。
+
+> 这里查了一下为什么实体编码可以被js解析。
+>
+> * 输入实体编码，在html中是相当于被转义，如输入`&#39;`就相当与一个没有特殊意义的单引号。
+> * 输入`&#39;`之后，在html中会把这个变成`'`，而且html传给js代码的时候，是传的字符串，也就是传的`'`，而这个在js代码中是可以被正常解析的。
+
+`https://ss&#39;);alert(1);//`
+
+这个点击名字的时候，是可以出发alert的。但是不给过。很奇怪。
+
+我看了一下官方的payload：`http://foo?&apos;-alert(1)-&apos;`用的是`&apos;`。
+
+#### 14. Reflected XSS into a template literal with angle brackets, single, double quotes, backslash and backticks Unicode-escaped
+
+![14.1](XSS-hard.assets/14.1.png)
+
+要在这里面绕过，并且触发alert。
+
+在尝试的过程中，发现单引号变成了`\u0027`，被unicode编码了，尝试用实体编码来绕过。
+
+![14.2](XSS-hard.assets/14.2.png)
+
+这次应该是直接写进去的，所以并没有被转换。实体编码也不行。
+
+想要闭合这个单引号应该是不太可能的了。但是注意这个是[模板字符串](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/template_strings)。模板字符串可以接受`${function}`的形式来调用函数，然后将结果返回在原位置。
+
+就比如：
+
+````
+'u' + (a+b) + 'b'   ===   `u${a+b}b`
+````
+
+
+
+也就是说，这里面可以执行函数。那就可以传入这个，然后在里面执行alert。
+
+payload：`${alert(1)}`
+
+#### 15. Reflected XSS with AngularJS sandbox escape without strings
+
+![15.1](XSS-hard.assets/15.1.png)
+
+这个题目使用了[AngularJS沙箱](https://portswigger.net/web-security/cross-site-scripting/contexts/angularjs-sandbox)。
+
+从文档中我们知道了应该用orderBy来构造payload。
+
+orderBy的典型使用方法是：`[123]|orderBy:'Some string'`
+
+题目禁止了在AngularJS里面使用$eval方法以及字符串。那我们可以采用`toString().constructor.fromCharCode()`的方法向`orderby`的参数里面传字符串。
+
+要注入进去还需要欺骗`isIdent()`函数，也就还需要`toString().constructor.prototype.charAt=[].join`。
+
+而`alert(1)`转换成数字就是`97, 108, 101, 114, 116, 40, 49, 41`
+
+所以我初步的payload：
+
+```
+toString().constructor.prototype.charAt=[].join;[1]|orderBy:toString().constructor.fromCharCode(97,108,101,114,116,40,49,41)
+```
+
+但是我传进去之后，他说search参数的值不能超过120个字符。
+
+那我用`&`隔开前后，让search单独等于一个值。
+
+改造之后的payload：
+
+```
+1&toString().constructor.prototype.charAt=[].join;[1]|orderBy:toString().constructor.fromCharCode(97,108,101,114,116,40,49,41)
+```
+
+然后，发现不行。去看了看官方的payload。
+
+```
+1&toString().constructor.prototype.charAt%3d[].join;[1]|orderBy:toString().constructor.fromCharCode(120,61,97,108,101,114,116,40,49,41)=1
+```
+
+经过我不断的减量测试，发现官方最后那个`=1`不是必要的。（直接用官方的payload，去掉`=1`也能正常的弹窗。）
+
+于是我一开始以为就差了那个`120,61`，官方给的是`x=alert(1)`，我写的是`alert(1)`。（至于为啥要用`x=alert(1)`我并没有搞懂）
+
+然而我改成和官方一样之后还是不行。就离谱。
+
+然后，当我将`charAt%3d[]`里面的`%3d`改成`=`之后，发现官方的payload也不行了，我去，这是什么阴间东西。
+
+然后我仔细一想，如果这里是`=`，那么第二个参数（前面`&`隔开了）就有了名字和值，传进去后就被分开了，当然就不行了。
+
+（顺带提一嘴，这个只能在地址栏输入，不能在下面那个框框输入，要不然`&`就会被url编码，导致不能发挥作用，search的值会超过120个字符。因为在地址栏输入，我一开始也就没有注意这个`%3d`）
+
+最后我的payload是：
+
+```
+1&toString().constructor.prototype.charAt%3d[].join;[1]|orderBy:toString().constructor.fromCharCode(120,61,97,108,101,114,116,40,49,41)
+```
+
