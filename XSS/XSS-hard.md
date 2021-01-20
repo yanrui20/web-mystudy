@@ -179,3 +179,80 @@ payload：
 
 #### 10.Reflected XSS into a JavaScript string with angle brackets HTML encoded
 
+`< >`都被过滤了。
+
+![10.1](XSS-hard.assets/10.1.png)
+
+在这里可以看到输入的特殊字符都被转义了。
+
+![10.2](XSS-hard.assets/10.2.png)
+
+这里源码可以清晰的看到输入是被一次url转码了。
+
+既然不能奢望用document.write里面的内容来写出xss，那么可以直接闭合var那里的内容，来在当前的script下面写alert。
+
+即payload为：`';alert(1);'`。
+
+#### 11. Reflected XSS into a JavaScript string with angle brackets and double quotes HTML-encoded and single quotes escaped
+
+尖括号和双引号被编码，单引号被过滤。
+
+![11.1](XSS-hard.assets/11.1.png)
+
+注入点还是刚刚这个地方，只不过单双引号都无了。
+
+![11.2](XSS-hard.assets/11.2.png)
+
+可以看到，这里的单引号是用的反斜杠来转义的，而且他没有对反斜杠进行过滤操作，那么我们可以自己加反斜杠来绕过。
+
+但是最后的那个单引号不好处理，我直接给注释了。
+
+payload：`\';alert(1);//`
+
+#### 12. Reflected XSS in a JavaScript URL with some characters blocked
+
+这个题目输入在url中。还被禁止了一些字符。随便点一个post，找到可以注入的url。
+
+![12.1](XSS-hard.assets/12.1.png)
+
+这个题经过测试，发现括号被过滤了。
+
+这道题我不会做，看了看官方的payload：`https://your-lab-id.web-security-academy.net/post?postId=5&'},x=x=>{throw/**/onerror=alert,1337},toString=x,window+'',{x:'`
+
+我就看懂了那个`&`的意思：应该是在传参数的时候单独将id=5隔离出来，防止加载不出来网页。
+
+以下是我到处搜集的资料：
+
+> * [下面英文的出处](https://security.stackexchange.com/questions/229055/reflected-xss-in-a-javascript-url-with-some-characters-blocked)
+> * `x=x=>{throw/**/onerror=alert,1337}` is the arrow function which assigns alert as global error handler and throws 1337.
+>
+> * `toString=x, window+''` assigns x to toString and then forces a string conversion on window.
+>
+> * The `&` is simply a parameter separator since we are passing our user values via a GET request. This is esentially creating a new parameter named `'},x` with the rest of the XSS payload `x=%3E{throw/**/onerror=alert,1337},toString=x,window+%27%27,{x:%27` as its value. This way the URL does not break, while the whole payload makes its way into the anchor tag containing the vulnerable JavaScript URL.
+> * The last part of the payload `{x:'` completes the remaining JavaScript code `'}.finally...` ensuring that our injected payload does not break it, but allows it to execute properly.
+> * `&`: appends a new parameter to leave the `postId` parameter untouched.
+> * `'}`: breaks out of `body:'/post?postId=1'}`. The code should now look like `fetch('/analytics', {method:'post',body:'/post?postId=1&'}'}).finally(_ => window.location = '/')`
+> * `,x=x=>{throw/**/onerror=alert,1337},toString=x,window+'',`: Is a fancy way to call `alert(1337)`. It basically overwrites the `toString` method and triggers it. `,toString=alert(1337),window+'',` doesn't work, since `(` and `)` are blocked. The `,` separation is important to not break the JavaScript.
+> * when you click `Back to Blog` the fetch instruction should be visible in DevTools. This can't be done with the solution payload, since the [throw](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/throw) statement prevents/interrupts the fetch call.
+> * 另外，[这个网站](https://portswigger.net/research/xss-without-parentheses-and-semi-colons)详细介绍了throw和onerreor的搭配用法。应该会对这个题的理解有帮助。
+> * [箭头函数](https://www.liaoxuefeng.com/wiki/1022910821149312/1031549578462080)
+
+下面我改了官方的一些东西，使得其看起来更加容易。
+
+`https://your-lab-id.web-security-academy.net/post?postId=5&'},y=x=>{throw/**/onerror=alert,1337},toString=y,window+'',{a:'`
+
+![12.2](XSS-hard.assets/12.2.png)
+
+个人解释：
+
+* 传入参数：
+  * `postId`=`5`
+  * `'},y`=`x=>{throw/**/onerror=alert,1337},toString=y,window+'',{a:'`
+
+* 解析js：
+  * 首先`5&’}`这一部分将前面封闭。
+  * 然后创建了一个箭头函数（匿名函数） x=>{throw/**/onerror=alert,1337}（x是函数的输入，但是函数里面并没有用），并将结果alert(1337)赋值给y。
+  * `toString=y,window+''`将y强制转换成字符串并且创建窗口进行输出。（有一说一，这里的转换和窗口没咋看懂，只知道大概是这个意思。）
+  * 最后一点`{a:'`只是为了封闭后面的部分。
+
+#### 13. Stored XSS into `onclick` event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped
