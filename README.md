@@ -1,12 +1,19 @@
 # web-mystudy
+**靶场：**
 
-| Type | Difficulty |                           URL-Link                           |                             File                             |
-| :--: | :--------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-| XSS  |    EASY    |        https://xss.angelo.org.cn/level1.php?name=test        |               [XSS-easy.md](./XSS/XSS-easy.md)               |
-| XSS  |   MEDIUM   |                      http://prompt.ml/0                      |             [XSS-medium.md](./XSS/XSS-medium.md)             |
-| XSS  |    burp    | https://portswigger.net/web-security/all-labs#cross-site-scripting |               [XSS-hard.md](./XSS/XSS-hard.md)               |
-| XSS  | SUMMARIZE  |                             NONE                             |          [XSS-summarize.md](./XSS/XSS-summarize.md)          |
-| SQL  |    burp    | https://portswigger.net/web-security/all-labs#sql-injection  | [sql-injection-burp.md](./sql-injection/sql-injection-burp.md) |
-| CSRF |    burp    | https://portswigger.net/web-security/all-labs#cross-site-request-forgery-csrf | [CSRF-burp.md](./Cross-site-request-forgery(CSRF)/CSRF-burp.md) |
+|     TYPE     | Difficulty |                           URL-Link                           |                           WP-File                            |
+| :----------: | :--------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+|    CTFHUB    |     E      |       [CTFHUB-WEB](https://www.ctfhub.com/#/skilltree)       |                   [CTFHUB-DIR](./CTFHUB/)                    |
+|     XSS      |     E      |  [XSS-EASY](https://xss.angelo.org.cn/level1.php?name=test)  |               [XSS-easy.md](./XSS/XSS-easy.md)               |
+|     XSS      |     M      |               [XSS-MEDIUM](http://prompt.ml/0)               |             [XSS-medium.md](./XSS/XSS-medium.md)             |
+|     XSS      |     H      | [XSS-burp](https://portswigger.net/web-security/all-labs#cross-site-scripting) |               [XSS-hard.md](./XSS/XSS-hard.md)               |
+|     SQL      |     H      | [SQL-burp](https://portswigger.net/web-security/all-labs#sql-injection) | [sql-injection-burp.md](./sql-injection/sql-injection-burp.md) |
+|     CSRF     |     H      | [CSRF-burp](https://portswigger.net/web-security/all-labs#cross-site-request-forgery-csrf) | [CSRF-burp.md](./CSRF(Cross-site-request-forgery)/CSRF-burp.md) |
+| Clickjacking |     H      | [ClickJacking-burp](https://portswigger.net/web-security/all-labs#clickjacking) |      [Clickjacking.md](./Clickjacking/Clickjacking.md)       |
 
+**总结：**
+
+| Type |                    File                    |
+| :--: | :----------------------------------------: |
+| XSS  | [XSS-summarize.md](./XSS/XSS-summarize.md) |
 
