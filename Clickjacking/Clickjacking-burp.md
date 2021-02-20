@@ -84,11 +84,11 @@ POC:
 
 这里果然禁止了脚本的执行：
 
-![3.1](Clickjacking.assets/3.1.png)
+![3.1](Clickjacking-burp.assets/3.1.png)
 
 而不加sandbox的属性时，就不能成功了。
 
-![3.2](Clickjacking.assets/3.2.png)
+![3.2](Clickjacking-burp.assets/3.2.png)
 
 #### 4. Exploiting clickjacking vulnerability to trigger DOM-based XSS
 

@@ -9,7 +9,8 @@
 |     XSS      |     H      | [XSS-burp](https://portswigger.net/web-security/all-labs#cross-site-scripting) |               [XSS-hard.md](./XSS/XSS-hard.md)               |
 |     SQL      |     H      | [SQL-burp](https://portswigger.net/web-security/all-labs#sql-injection) | [sql-injection-burp.md](./sql-injection/sql-injection-burp.md) |
 |     CSRF     |     H      | [CSRF-burp](https://portswigger.net/web-security/all-labs#cross-site-request-forgery-csrf) | [CSRF-burp.md](./CSRF(Cross-site-request-forgery)/CSRF-burp.md) |
-| Clickjacking |     H      | [ClickJacking-burp](https://portswigger.net/web-security/all-labs#clickjacking) |      [Clickjacking.md](./Clickjacking/Clickjacking.md)       |
+| Clickjacking |     H      | [ClickJacking-burp](https://portswigger.net/web-security/all-labs#clickjacking) | [Clickjacking-burp.md](./Clickjacking/Clickjacking-burp.md)  |
+|  DOM-based   |     H      | [DOM-burp](https://portswigger.net/web-security/all-labs#dom-based-vulnerabilities) |    [DOM-burp.md](./DOM-based vulnerabilities/DOM-burp.md)    |
 
 **总结：**
 
