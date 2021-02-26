@@ -11,6 +11,7 @@
 |     CSRF     |     H      | [CSRF-burp](https://portswigger.net/web-security/all-labs#cross-site-request-forgery-csrf) | [CSRF-burp.md](./CSRF(Cross-site-request-forgery)/CSRF-burp.md) |
 | Clickjacking |     H      | [ClickJacking-burp](https://portswigger.net/web-security/all-labs#clickjacking) | [Clickjacking-burp.md](./Clickjacking/Clickjacking-burp.md)  |
 |  DOM-based   |     H      | [DOM-burp](https://portswigger.net/web-security/all-labs#dom-based-vulnerabilities) |    [DOM-burp.md](./DOM-based vulnerabilities/DOM-burp.md)    |
+|     CORS     |     H      | [CORS-burp](https://portswigger.net/web-security/all-labs#cross-origin-resource-sharing-cors) | [CORS-burp.md](./CORS(Cross-origin resource sharing)/CORS-burp.md) |
 
 **总结：**
 
