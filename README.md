@@ -14,6 +14,7 @@
 |     CORS     |     H      | [CORS-burp](https://portswigger.net/web-security/all-labs#cross-origin-resource-sharing-cors) | [CORS-burp.md](./PortSwigger/CORS(Cross-origin-resource-sharing)/CORS-burp.md) |
 |     SSRF     |     H      | [SSRF-burp](https://portswigger.net/web-security/all-labs#server-side-request-forgery-ssrf) | [SSRF-burp.md](./PortSwigger/Server-side-request-forgery(SSRF)/SSRF-burp.md) |
 |  OS-command  |     H      | [OS-command-burp](https://portswigger.net/web-security/all-labs#server-side-request-forgery-ssrf) | [OS-command-burp.md](./PortSwigger/OS-command-injection/OS-command-burp.md) |
+|     XXE      |     H      | [XXE-burp](https://portswigger.net/web-security/all-labs#xml-external-entity-xxe-injection) | [XXE-burp.md](PortSwigger/XML-external-entity-(XXE)-injection/XXE-burp.md) |
 
 **总结：**
 
