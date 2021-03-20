@@ -16,7 +16,7 @@
 |   OS-command    |     H      | [OS-command-burp](https://portswigger.net/web-security/all-labs#server-side-request-forgery-ssrf) | [OS-command-burp.md](./PortSwigger/OS-command-injection/OS-command-burp.md) |
 |       XXE       |     H      | [XXE-burp](https://portswigger.net/web-security/all-labs#xml-external-entity-xxe-injection) | [XXE-burp.md](PortSwigger/XML-external-entity-(XXE)-injection/XXE-burp.md) |
 | deserialization |     H      | [deserialization-burp](https://portswigger.net/web-security/all-labs#insecure-deserialization) | [deserialization-burp.md](PortSwigger/Insecure-deserialization/deserialization-burp.md) |
-|                 |            |                                                              |                                                              |
+|      SSTI       |     H      | [SSTI-burp](https://portswigger.net/web-security/all-labs#server-side-template-injection) | [SSTI-burp.md](PortSwigger/Insecure-deserialization/SSTI-burp.md) |
 |                 |            |                                                              |                                                              |
 |                 |            |                                                              |                                                              |
 |                 |            |                                                              |                                                              |

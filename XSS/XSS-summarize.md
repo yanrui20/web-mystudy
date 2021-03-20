@@ -1,3 +1,5 @@
+[TOC]
+
 # XSS-EASY
 
 ## 语句

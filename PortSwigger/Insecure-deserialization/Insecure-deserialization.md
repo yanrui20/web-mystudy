@@ -947,6 +947,8 @@ class CustomTemplate {
     $object->template_file_path = $blog;
     ```
 
+    这里因为要触发Blog里面的render函数，所以需要触发`__toString()`，而这个魔术方法是在`类被当作字符串使用时触发`。所以我们需要在`CustomTemplate`类里去触发这个函数。对应的位置是：`lockFilePath()`函数。而我们注意到，在好多函数里都调用了这个函数，特别是`__destruct()`函数，也就是说只要我们创建了相应的`CustomTemplate`类，至少在销毁的时候一定会触发`blog`里面的`__toString()`函数。
+
 * 使用[phar jpg polyglot](https://github.com/kunte0/phar-jpg-polyglot)工具:
 
     **1.php:**
