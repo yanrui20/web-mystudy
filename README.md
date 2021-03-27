@@ -19,7 +19,7 @@
 |          SSTI          |     H      | [SSTI-burp](https://portswigger.net/web-security/all-labs#server-side-template-injection) | [SSTI-burp.md](PortSwigger/Insecure-deserialization/SSTI-burp.md) |
 |  Directory traversal   |     H      | [Directory-traversal](https://portswigger.net/web-security/all-labs#directory-traversal) | [Directory-traversal.md](PortSwigger/Directory-traversal/Directory-traversal.md) |
 | HTTP request smuggling |     H      | [HTTP-request-smuggling](https://portswigger.net/web-security/all-labs#http-request-smuggling) | [HTTP-request-smuggling.md](PortSwigger/HTTP-request-smuggling/HTTP-request-smuggling.md) |
-|                        |            |                                                              |                                                              |
+|     Authentication     |     H      | [Authentication](https://portswigger.net/web-security/all-labs#authentication) | [Authentication.md](PortSwigger/Authentication/Authentication.md) |
 |                        |            |                                                              |                                                              |
 |                        |            |                                                              |                                                              |
 

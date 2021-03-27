@@ -88,3 +88,24 @@
 
 `dirsearch`还是好用啊，如果`ffuf`也有一个比较好的字典，应该也是可以用的。
 
+# 端口扫描
+
+## 1. **Nmap**
+
+`nmap -T4 -A -v www.baidu.com`
+
+输出:
+
+```
+TRACEROUTE (using port 443/tcp)
+HOP RTT      ADDRESS
+1   0.00 ms  XiaoQiang (192.168.1.1)
+2   10.00 ms 172.16.0.1
+3   ... 13
+14  39.00 ms 39.156.66.18
+```
+
+对应的拓扑图：
+
+![3](%E5%B7%A5%E5%85%B7%E5%88%86%E6%9E%90%20-%20donx.assets/3.png)
+
