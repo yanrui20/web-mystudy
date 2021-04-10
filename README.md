@@ -21,7 +21,7 @@
 | HTTP request smuggling |     H      | [HTTP-request-smuggling](https://portswigger.net/web-security/all-labs#http-request-smuggling) | [HTTP-request-smuggling.md](PortSwigger/HTTP-request-smuggling/HTTP-request-smuggling.md) |
 |     Authentication     |     H      | [Authentication](https://portswigger.net/web-security/all-labs#authentication) | [Authentication.md](PortSwigger/Authentication/Authentication.md) |
 |     Business logic     |     H      | [Business logic](https://portswigger.net/web-security/all-labs#business-logic-vulnerabilities) | [Business-logic.md](PortSwigger/Business-logic/Business-logic.md) |
-|                        |            |                                                              |                                                              |
+|     Access control     |     H      | [Access control](https://portswigger.net/web-security/all-labs#access-control-vulnerabilities) | [Access-control.md](PortSwigger/Access-control/Access-control.md) |
 |                        |            |                                                              |                                                              |
 |                        |            |                                                              |                                                              |
 |                        |            |                                                              |                                                              |
