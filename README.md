@@ -22,8 +22,8 @@
 |     Authentication     |     H      | [Authentication](https://portswigger.net/web-security/all-labs#authentication) | [Authentication.md](PortSwigger/Authentication/Authentication.md) |
 |     Business logic     |     H      | [Business logic](https://portswigger.net/web-security/all-labs#business-logic-vulnerabilities) | [Business-logic.md](PortSwigger/Business-logic/Business-logic.md) |
 |     Access control     |     H      | [Access control](https://portswigger.net/web-security/all-labs#access-control-vulnerabilities) | [Access-control.md](PortSwigger/Access-control/Access-control.md) |
-|                        |            |                                                              |                                                              |
-|                        |            |                                                              |                                                              |
+| Information disclosure |     H      | [Information disclosure](https://portswigger.net/web-security/all-labs#information-disclosure) | [Information-disclosure.md](PortSwigger/Information-disclosure/Information-disclosure.md) |
+|       WebSockets       |     H      | [WebSockets](https://portswigger.net/web-security/all-labs#websockets) | [Information-disclosure.md](PortSwigger/WebSockets/WebSockets.md) |
 |                        |            |                                                              |                                                              |
 |                        |            |                                                              |                                                              |
 |                        |            |                                                              |                                                              |
