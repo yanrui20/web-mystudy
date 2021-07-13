@@ -25,7 +25,6 @@
     ```
 
 * 复制这个到exploit server的body框，点击store。
-  
 
 #### 2. CSRF where token validation depends on request method
 

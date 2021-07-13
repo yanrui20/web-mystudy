@@ -109,3 +109,11 @@ HOP RTT      ADDRESS
 
 ![3](%E5%B7%A5%E5%85%B7%E5%88%86%E6%9E%90%20-%20donx.assets/3.png)
 
+# 漏扫
+
+## **1. Xray**
+
+```
+xray ws --listen 127.0.0.1:7777 --html-output result1.html
+```
+
