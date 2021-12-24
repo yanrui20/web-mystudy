@@ -1,0 +1,6 @@
+1.基础开发知识（servlet、spring、springboot），每个框架的知识掌握到能够开发一个小型应用；
+2.fastjson、jackson-databind历史漏洞复现
+3.spring、springboot 历史漏洞复现漏洞
+4.spring cloud组件漏洞复现
+5.GitHub项目漏洞挖掘
+6.开源组件漏洞复现和挖掘
